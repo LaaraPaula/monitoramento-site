@@ -131,6 +131,7 @@ Envia notificações via Telegram, e se necessário reinicializa o servidor Ngin
 6. Escreva o seguinte script:
 
     ![Script-pt1](imagens/script1.png)
+    >Neste exemplo o script recebe o IP como parâmetro, para poder ser executado e monitorar várias instâncias sem que precise alterar o documento em si 
 
     1. 🔴 Indica o interpretador que irá usar para executar o script
     2. 🔵 Valida se foi passado o ip como parâmetro para execução do script, se sim, armagena na sua respectiva variável
