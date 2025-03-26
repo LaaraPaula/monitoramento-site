@@ -277,7 +277,7 @@ Envia notificações via Telegram, e se necessário reinicializa o servidor Ngin
     # Permissão para execução do script
     chmod +x /usr/local/bin/monitoramento.sh
 
-    # Agendando o script no cron para rodar a cada 5 minutos
+    # Agendando o script no cron para rodar a cada 1 minutos
     echo "*/1 * * * * root /usr/local/bin/monitoramento.sh" >> /etc/crontab
 
     # Mensagem de conclusão
