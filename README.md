@@ -9,7 +9,7 @@
 - [🤖 Criando o Bot Token do Telegram](#-criando-o-bot-token-do-telegram)
 - [🛠️ Criando Script e seus requisitos](#️-criando-script-e-seus-requisitos)
 - [🚧 Configuração Cronjob](#-configuração-cronjob)
-- [🌟 Bônus - Configuração automática com User Data](#-configuração-automática-com-user-data)
+- [🌟 Bônus - Configuração automática com User Data](#-bonus---configuracao-automatica-com-user-data)
 - [📜 Conclusão](#-conclusão)
 
 ## 📖 Introdução
@@ -198,7 +198,7 @@ Envia notificações via Telegram, e se necessário reinicializa o servidor Ngin
 
     # Clonar o repositório
     rm -rf /var/www/html/*
-    git clone https://github.com/seu-usuario/monitoramento-site.git /tmp/repo
+    git clone https://github.com/SEU_USUARIO/SEU_REPOSITORIO.git /tmp/repo
 
     # Copiar os arquivos para o diretório do Nginx
     cp -r /tmp/repo/pagina/* /var/www/html/
