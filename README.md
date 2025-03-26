@@ -9,6 +9,7 @@
 - [🤖 Criando o Bot Token do Telegram](#-criando-o-bot-token-do-telegram)
 - [🛠️ Criando Script e seus requisitos](#️-criando-script-e-seus-requisitos)
 - [🚧 Configuração Cronjob](#-configuração-cronjob)
+- [🌟 Bônus - Configuração automática com User Data](#-configuração-automática-com-user-data)
 - [📜 Conclusão](#-conclusão)
 
 ## 📖 Introdução
@@ -142,7 +143,7 @@ Envia notificações via Telegram, e se necessário reinicializa o servidor Ngin
 
     ![Script-pt2](imagens/script2.png)
 
-    Usando 'case' para validar o status do site, armagenando mensagens especificas de acordo com os status: 000, 403, 404, 500, 502, 503, 200.
+    Usando 'case' para validar o status do site, armazenando mensagens específicas de acordo com os status: 000, 403, 404, 500, 502, 503, 200.
 
     ![Sprint-pt3](imagens/sprint3.png)
     1. 🔴 Uso o comando 'echo' para guardar a data com a mensagem no log que definimos na variável LOG
@@ -168,6 +169,132 @@ Envia notificações via Telegram, e se necessário reinicializa o servidor Ngin
     sudo systemctl restart cron
     sudo systemctl enable cron
     ```
+
+## 🌟 Bônus - Configuração automática com User Data
+1. Incluindo User Data na criação da instância
+    1. Crie sua instância, assim como no passo anterior [⚙️ Configurando a instância](#️-configurando-a-instância). Porém antes de executá-la vc irá rolar até a última configuração
+    
+    ![User-Data1](imagens/userdata1.png)
+
+    2. Vai rolar até o final dessa configuração e incluir o script abaixo no campo selecionado, e executar a sua instância
+
+    ![User-Data2](imagens/userData2.png)
+
+    ```bash
+    #!/bin/bash
+    # Atualiza os pacotes do sistema
+    apt update -y && apt upgrade -y
+
+    # Instala o Nginx, git e curl
+    apt install -y nginx git curl
+
+    # Habilita e inicia o serviço do Nginx
+    systemctl enable nginx
+    systemctl start nginx
+
+    # Habilita e inicia o serviço do Nginx
+    systemctl enable nginx
+    systemctl start nginx
+
+    # Clonar o repositório
+    rm -rf /var/www/html/*
+    git clone https://github.com/seu-usuario/monitoramento-site.git /tmp/repo
+
+    # Copiar os arquivos para o diretório do Nginx
+    cp -r /tmp/repo/pagina/* /var/www/html/
+
+    # Renomear app.html para index.html
+    mv /var/www/html/app.html /var/www/html/index.html 
+
+    # Ajustar permissões
+    chown -R www-data:www-data /var/www/html
+    chmod -R 755 /var/www/html
+
+    # Reiniciar o Nginx para aplicar as mudanças
+    systemctl restart nginx
+
+    # Cria diretório para logs do monitoramento
+    mkdir -p /var/log/meus_logs
+
+    # Cria o script de monitoramento
+    cat << 'EOF' > /usr/local/bin/monitoramento.sh
+    #!/bin/bash
+
+    IP="$(curl -s ifconfig.me)"  # Obtém IP público da instância
+    URL="http://$IP"
+    LOG="/var/log/meus_logs/monitoramento.log"
+
+    TELEGRAM_TOKEN="<SEU_BOT_TOKEN>"
+    TELEGRAM_ID="<SEU_CHAT_ID>"
+    API_URL="https://api.telegram.org/bot$TELEGRAM_TOKEN/sendMessage"
+
+    STATUS=$(/usr/bin/curl -o /dev/null -s -w "%{http_code}" "$URL")
+    DATA=$(date +"%Y-%m-%d %H:%M:%S")
+
+    case $STATUS in
+        "000")
+            MSG="⚠️ ALERTA: O servidor Nginx não está respondendo! Pode estar fora do ar."
+            REINICIAR=true
+            ;;
+        "403")
+            MSG="🚫 ERRO 403: Acesso negado. Verifique permissões dos arquivos."
+            REINICIAR=false
+            ;;
+        "404")
+            MSG="📂 ERRO 404: Página não encontrada. O index.html pode estar ausente."
+            REINICIAR=false
+            ;;
+        "500")
+            MSG="🔥 ERRO 500: O servidor encontrou um erro interno."
+            REINICIAR=true
+            ;;
+        "502"|"503")
+            MSG="⚡ ERRO $STATUS: O servidor está sobrecarregado ou com erro de proxy."
+            REINICIAR=false
+            ;;
+        *)
+            MSG="✅ OK: O servidor está funcionando corretamente. Código HTTP: $STATUS"
+            REINICIAR=false
+            ;;
+    esac
+
+    echo "$DATA - $MSG" >> $LOG
+    /usr/bin/curl -s -X POST $API_URL -d chat_id=$TELEGRAM_ID -d text="$MSG" > /dev/null
+
+    if [[ "$REINICIAR" == true ]]; then
+        echo "$DATA - Tentando reiniciar o Nginx..." | sudo tee -a $LOG
+        sudo systemctl restart nginx
+        if systemctl is-active --quiet nginx; then
+            MSG="🔄 O Nginx foi reiniciado com sucesso!"
+        else
+            MSG="❌ Falha ao reiniciar o Nginx!"
+        fi
+        /usr/bin/curl -s -X POST $API_URL -d chat_id=$TELEGRAM_ID -d text="$MSG" > /dev/null
+    fi
+    EOF
+
+    # Permissão para execução do script
+    chmod +x /usr/local/bin/monitoramento.sh
+
+    # Agendando o script no cron para rodar a cada 5 minutos
+    echo "*/1 * * * * root /usr/local/bin/monitoramento.sh" >> /etc/crontab
+
+    # Mensagem de conclusão
+    echo "Configuração concluída. Nginx e monitoramento ativos!" > /var/log/meus_logs/setup.log
+    ```
+
+    > 💡 **Observação:** Para que funcione esse script com o site que eu escrevi, hospedei o meu site no repositório git, estou clonando ele e renomeando minha página .html para o padrão de leitura do Nginx que é o index.html
+
+    3. Caso precise editar o User Data:
+
+        ![Obs-UserData](imagens/obsuserdata.png)
+
+        ![User-Data3](imagens/userdata3.png)
+
+        Use o campo editável para alterar ou fazer qualquer substituição no User Data, e salve suas modificações
+
+        ![User-Data4](imagens/userdata4.png)
+
 
 ## 📜 Conclusão
 Este projeto implementa um servidor web na AWS com Linux e Nginx, focando em alta disponibilidade e monitoramento eficiente. Ele inclui automação para manter o serviço ativo e notificações via Telegram para alertas em caso de falhas. Além disso, utiliza SystemD e logs personalizados para uma administração eficaz.
