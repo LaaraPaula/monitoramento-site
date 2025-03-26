@@ -9,7 +9,7 @@
 - [🤖 Criando o Bot Token do Telegram](#-criando-o-bot-token-do-telegram)
 - [🛠️ Criando Script e seus requisitos](#️-criando-script-e-seus-requisitos)
 - [🚧 Configuração Cronjob](#-configuração-cronjob)
-- [🌟 Bônus Configuração automática com User Data](#-bonus-configuracao-automatica-com-user-data)
+- [Bônus Configuração automática com User Data](#bonus-configuracao-automatica-com-user-data)
 - [📜 Conclusão](#-conclusão)
 
 ## 📖 Introdução
@@ -170,7 +170,7 @@ Envia notificações via Telegram, e se necessário reinicializa o servidor Ngin
     sudo systemctl enable cron
     ```
 
-## 🌟 Bônus Configuração automática com User Data
+## Bônus Configuração automática com User Data
 1. Incluindo User Data na criação da instância
     1. Crie sua instância, assim como no passo anterior [⚙️ Configurando a instância](#️-configurando-a-instância). Porém antes de executá-la vc irá rolar até a última configuração
     
